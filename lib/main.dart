@@ -4,8 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
 
 void main() => runApp(MaterialApp(
-  home: MyApp(),
-));
+      home: MyApp(),
+    ));
 
 class MyApp extends StatefulWidget {
   @override
@@ -31,38 +31,39 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    print('Upload picture feature');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Teachable Machine Learning'),
       ),
       body: _loading
           ? Container(
-        alignment: Alignment.center,
-        child: CircularProgressIndicator(),
-      )
-          : Container(
-        width: MediaQuery.of(context).size.width,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _image == null ? Container() : Image.file(_image),
-            SizedBox(
-              height: 20,
-            ),
-            _outputs != null
-                ? Text(
-              "${_outputs[0]["label"]}",
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 20.0,
-                background: Paint()..color = Colors.white,
-              ),
+              alignment: Alignment.center,
+              child: CircularProgressIndicator(),
             )
-                : Container()
-          ],
-        ),
-      ),
+          : Container(
+              width: MediaQuery.of(context).size.width,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _image == null ? Container() : Image.file(_image),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  _outputs != null
+                      ? Text(
+                          "${_outputs[0]["label"]}",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 20.0,
+                            background: Paint()..color = Colors.white,
+                          ),
+                        )
+                      : Container()
+                ],
+              ),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: pickImage,
         child: Icon(Icons.image),
