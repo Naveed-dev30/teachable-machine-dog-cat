@@ -32,6 +32,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     print("Search Feature");
+    print('Search feature logic');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Teachable Machine Learning'),
