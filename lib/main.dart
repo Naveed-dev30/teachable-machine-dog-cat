@@ -33,6 +33,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     print("Search Feature");
     print('Search feature logic');
+    print('Upload picture feature');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Teachable Machine Learning'),
