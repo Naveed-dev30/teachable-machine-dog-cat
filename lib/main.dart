@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
 
-void main() => runApp(MaterialApp(
-      home: MyApp(),
-    ));
+void main() => runApp(
+      MaterialApp(
+        home: MyApp(),
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+      ),
+    );
 
 class MyApp extends StatefulWidget {
   @override
@@ -14,7 +20,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   List _outputs;
-  File _image;
+  PickedFile _image;
   bool _loading = false;
 
   @override
@@ -29,52 +35,137 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  double dogprobability;
+  String animal;
+
   @override
   Widget build(BuildContext context) {
-    print("Search Feature");
-    print('Search feature logic');
-    print('Upload picture feature');
+    final size = MediaQuery.of(context).size;
+    dogprobability = _outputs != null ? _outputs[0]['confidence'] : 0.0;
+    animal = _outputs != null ? _outputs[0]['label'] : '';
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Teachable Machine Learning'),
-      ),
       body: _loading
           ? Container(
               alignment: Alignment.center,
               child: CircularProgressIndicator(),
             )
           : Container(
-              width: MediaQuery.of(context).size.width,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Stack(
                 children: [
-                  _image == null ? Container() : Image.file(_image),
-                  SizedBox(
-                    height: 20,
+                  Positioned(
+                    height: size.height * 0.4,
+                    width: size.width,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage(
+                              _image?.path ?? 'assets/dog_cover.jpg',
+                            ),
+                            fit: BoxFit.cover),
+                      ),
+                    ),
                   ),
-                  _outputs != null
-                      ? Text(
-                          "${_outputs[0]["label"]}",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 20.0,
-                            background: Paint()..color = Colors.white,
+                  Positioned(
+                    top: size.height * 0.35,
+                    height: size.height * 0.65,
+                    width: size.width,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 20),
+                          Text(
+                            'Prediction',
+                            style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
                           ),
-                        )
-                      : Container()
+                          SizedBox(height: 10),
+                          Text(
+                            dogprobability != 0.0 ? '${dogprobability.toStringAsFixed(2)}% ${animal.split(' ')[1]}' : '',
+                            style: TextStyle(
+                              color: Colors.green,
+                            ),
+                          ),
+                          SizedBox(height: 90),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Column(
+                                children: [
+                                  OutlineButton(
+                                    onPressed: () async {
+                                      pickImage(ImageSource.camera);
+                                    },
+                                    highlightedBorderColor: Colors.orange,
+                                    highlightElevation: 10.0,
+                                    color: Colors.white,
+                                    textColor: Colors.white,
+                                    padding: EdgeInsets.all(16),
+                                    child: Icon(
+                                      Icons.camera_alt,
+                                      color: Colors.orange,
+                                    ),
+                                    shape: CircleBorder(),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Text(
+                                    'Take Photo',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  OutlineButton(
+                                    onPressed: () async {
+                                      pickImage(ImageSource.gallery);
+                                    },
+                                    highlightedBorderColor: Colors.blue,
+                                    highlightElevation: 10.0,
+                                    color: Colors.white,
+                                    textColor: Colors.white,
+                                    padding: EdgeInsets.all(16),
+                                    child: Icon(
+                                      Icons.photo,
+                                      color: Colors.blue,
+                                    ),
+                                    shape: CircleBorder(),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Text(
+                                    'Pick Photo',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: pickImage,
-        child: Icon(Icons.image),
-      ),
     );
   }
 
-  pickImage() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+  pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    var image = await picker.getImage(
+      source: source,
+    );
     if (image == null) return null;
     setState(() {
       _loading = true;
@@ -83,7 +174,7 @@ class _MyAppState extends State<MyApp> {
     classifyImage(image);
   }
 
-  classifyImage(File image) async {
+  classifyImage(PickedFile image) async {
     var output = await Tflite.runModelOnImage(
       path: image.path,
       numResults: 2,
